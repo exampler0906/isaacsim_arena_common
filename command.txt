@@ -1,0 +1,89 @@
+# train model
+CUDA_VISIBLE_DEVICES=0 ISAACSIM_ARENA_COMMON_ROOT=/home/weipeng/lerobot_code lerobot-train \
+  --dataset.repo_id=200_data \
+  --dataset.root=/home/weipeng/lerobot_code/lerobot_data/200_data \
+  --dataset.video_backend=pyav \
+  \
+  --output_dir=/home/weipeng/lerobot_code/outputs/act_200 \
+  --job_name=act_5090_200 \
+  \
+  --policy.type=act \
+  --policy.device=cuda \
+  --policy.push_to_hub=false \
+  \
+  --steps=2000 \
+  --batch_size=4 \
+  --num_workers=4 \
+  --save_freq=2000 \
+  --log_freq=1000 \
+  \
+  --eval_freq=2000 \
+  --eval.batch_size=10 \
+  --eval.n_episodes=10 \
+  \
+  --env.type=isaaclab_arena \
+  --env.hub_path=exampler0906/custom_env \
+  --env.environment=custom_env \
+  --env.embodiment=custom \
+  --env.object=custom_box \
+  --env.task="Pick up the white box and put it in brown plate" \
+  --env.lighting=grey_studio \
+  --env.background=office_204 \
+  --env.destination_prim=office_204/blue_sorting_bin \
+  \
+  --env.num_envs=1 \
+  --env.episode_length=300 \
+  \
+  --env.action_dim=7 \
+  --env.state_dim=8 \
+  --env.state_keys=joint_pos \
+  \
+  --env.enable_cameras=true \
+  --env.camera_keys=wrist_cam_rgb,scene_cam_rgb \
+  \
+  --env.video=true \
+  \
+  --env.headless=true \
+  \
+  --rename_map='{"observation.images.wrist_cam_rgb": "observation.images.image","observation.images.scene_cam_rgb": "observation.images.image2"}' \
+  \
+  --wandb.enable=true \
+  --wandb.project=vla
+
+  
+
+CUDA_VISIBLE_DEVICES=0 ISAACSIM_ARENA_COMMON_ROOT=/home/weipeng/lerobot_code  lerobot-eval \
+    --policy.path=/home/weipeng/lerobot_code/outputs/act/checkpoints/001000/pretrained_model \
+    --env.type=isaaclab_arena \
+    --env.hub_path=exampler0906/custom_env \
+    --rename_map='{"observation.images.wrist_cam_rgb": "observation.images.image","observation.images.scene_cam_rgb": "observation.images.image2"}' \
+    --policy.device=cuda \
+    --env.environment=custom_env \
+    --env.embodiment=custom \
+    --env.object=custom_box \
+    --env.lighting=grey_studio \
+    --env.background=office_204 \
+    --env.destination_prim=office_204/blue_sorting_bin \
+    --env.headless=false \
+    --env.enable_cameras=true \
+    --env.video=true \
+    --env.video_length=10 \
+    --env.video_interval=15 \
+    --env.state_keys=joint_pos \
+    --env.camera_keys=wrist_cam_rgb,scene_cam_rgb \
+    --env.num_envs=1   \
+    --env.action_dim=8  \
+    --env.state_dim=8   \
+    --env.task="Pick up the white box and put it in brown plate" \
+    --trust_remote_code=True \
+    --eval.batch_size=1
+
+
+
+  python isaacsim_arena_data_collector/collect_lerobot_data_autoplan.py           --output_dir ./lerobot_data           --dataset_name 1_test            --total_episodes 2        --control_mode joint   custom_env         --lighting grey_studio         --object custom_box       --background office_204           --destination_prim office_204/blue_sorting_bin  --embodiment custom
+  python isaacsim_arena_data_collector/replay_lerobot_data_autoplan.py --output_dir ./lerobot_data --dataset_name 1_test --max_episodes 0   --video_dir ./replay_videos_joint custom_env --lighting grey_studio --object custom_box --background office_204 --destination_prim office_204/blue_sorting_bin  --embodiment custom
+  python isaacsim_arena_data_collector/replay_lerobot_data_autoplan.py --output_dir ./lerobot_data --dataset_name 1_test --max_episodes 0   --video_dir ./replay_videos_joint custom_env --lighting grey_studio --object cracker_box_small --background packing_table --destination_prim container_h20 --embodiment big_custom
+  python isaacsim_arena_data_collector/collect_lerobot_data_autoplan.py           --output_dir ./lerobot_data           --dataset_name 1_test            --total_episodes 2            --control_mode joint custom_env           --lighting grey_studio           --object cracker_box_small           --background packing_table           --destination_prim container_h20 --embodiment big_custom
+
+
+
