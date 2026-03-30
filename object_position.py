@@ -55,3 +55,10 @@ embodiment_init_rotation = {
     "packing_table":{"big_custom" : (1.0, 0.0, 0.0, 0.0),},
     "office_204":{"custom" : (1.0, 0.0, 0.0, 0.0),}
 }
+
+# Isaac Sim 视口相机：eye = 抓取物初始位置 + offset（米）。模长越小一般越“近”（类似滚轮放大）。
+# 优先被 CLI --viewer_offset 覆盖；未传 CLI 时用此处按 --background 查表。
+viewer_lookat_offset = {
+    "office_204": (-1.1, -1.1, 1.1),
+    "packing_table": (-1.5, -1.5, 1.5),
+}
