@@ -2,27 +2,26 @@
 # train
 # =============================================================================
 CUDA_VISIBLE_DEVICES=0 ISAACSIM_ARENA_COMMON_ROOT=/home/weipeng/lerobot_code lerobot-train \
-  --dataset.repo_id=300_new \
-  --dataset.root=/home/weipeng/lerobot_code/lerobot_data/300_new \
+  --dataset.repo_id=custom_package_100 \
+  --dataset.root=/home/weipeng/lerobot_code/lerobot_data/custom_package_100 \
   --dataset.video_backend=pyav \
   \
-  --output_dir=/home/weipeng/lerobot_code/outputs/act_200_2 \
-  --job_name=act_5090_200 \
+  --output_dir=/home/weipeng/lerobot_code/outputs/act_100_new \
+  --job_name=act_5090_100_new \
   \
   --policy.type=act \
   --policy.device=cuda \
   --policy.push_to_hub=false \
-  --policy.chunk_size=200 \
-  --policy.n_action_steps=100 \
-  --policy.pretrained_path=/home/weipeng/lerobot_code/outputs/act_200/checkpoints/020000/pretrained_model \
+  --policy.chunk_size=100 \
+  --policy.n_action_steps=20 \
   \
   --steps=200000 \
-  --batch_size=4 \
-  --num_workers=4 \
-  --save_freq=5000 \
+  --batch_size=8 \
+  --num_workers=8 \
+  --save_freq=10000 \
   --log_freq=5000 \
   \
-  --eval_freq=5000 \
+  --eval_freq=10000 \
   --eval.batch_size=10 \
   --eval.n_episodes=10 \
   \
@@ -30,8 +29,8 @@ CUDA_VISIBLE_DEVICES=0 ISAACSIM_ARENA_COMMON_ROOT=/home/weipeng/lerobot_code ler
   --env.hub_path=exampler0906/custom_env \
   --env.environment=custom_env \
   --env.embodiment=custom \
-  --env.object=custom_box \
-  --env.task="Pick up the white box and put it in brown plate" \
+  --env.object=custom_package \
+  --env.task="Pick up the package and put it in brown plate" \
   --env.lighting=grey_studio \
   --env.background=office_204 \
   --env.destination_prim=office_204/blue_sorting_bin \
@@ -40,8 +39,8 @@ CUDA_VISIBLE_DEVICES=0 ISAACSIM_ARENA_COMMON_ROOT=/home/weipeng/lerobot_code ler
   --env.episode_length=400 \
   \
   --env.action_dim=7 \
-  --env.state_dim=8 \
-  --env.state_keys=joint_pos \
+  --env.state_dim=7 \
+  --env.state_keys=joint_pos_less,gripper_open \
   \
   --env.enable_cameras=true \
   --env.camera_keys=wrist_cam_rgb,scene_cam_rgb \
@@ -59,34 +58,42 @@ CUDA_VISIBLE_DEVICES=0 ISAACSIM_ARENA_COMMON_ROOT=/home/weipeng/lerobot_code ler
 # eval
 # =============================================================================
 CUDA_VISIBLE_DEVICES=0 ISAACSIM_ARENA_COMMON_ROOT=/home/weipeng/lerobot_code lerobot-eval \
-  --policy.path=/home/weipeng/lerobot_code/outputs/act_200/checkpoints/020000/pretrained_model \
+  --policy.path=/home/weipeng/single_arm_data_box_100_joint/checkpoints/030000/pretrained_model \
+  --policy.device=cuda \
+  --policy.n_action_steps=50 \
+  --trust_remote_code=True \
+  \
   --env.type=isaaclab_arena \
   --env.hub_path=exampler0906/custom_env \
-  --rename_map='{"observation.images.wrist_cam_rgb": "observation.images.image","observation.images.scene_cam_rgb": "observation.images.image2"}' \
-  --policy.device=cuda \
   --env.environment=custom_env \
   --env.embodiment=custom \
-  --env.object=custom_box \
+  --env.object=custom_package \
+  --env.task="Pick up the package and put it in brown box" \
   --env.lighting=grey_studio \
-  --env.background=office_204 \
+  --env.background=office_204_new \
   --env.destination_prim=office_204/blue_sorting_bin \
+  \
   --env.headless=false \
   --env.enable_cameras=true \
   --env.video=true \
-  --env.state_keys=joint_pos \
-  --env.camera_keys=wrist_cam_rgb,scene_cam_rgb \
   --env.num_envs=1 \
+  --env.episode_length=1000 \
   --env.action_dim=7 \
-  --env.state_dim=8 \
-  --env.task="Pick up the white box and put it in brown plate" \
-  --trust_remote_code=True \
+  --env.state_dim=7 \
+  --env.state_keys=joint_pos_less,gripper_open \
+  --env.camera_keys=wrist_cam_rgb,scene_cam_rgb \
+  \
+  --rename_map='{"observation.images.wrist_cam_rgb": "observation.images.wrist","observation.images.scene_cam_rgb": "observation.images.top"}' \
+  \
   --eval.batch_size=1 \
-  --eval.n_episodes=100 \
-  --env.episode_length=600
+  --eval.n_episodes=10
 
 # =============================================================================
-# data collection / replay（在 lerobot_code 根目录执行时可去掉 isaacsim_arena_data_collector/ 前缀或改路径）
+# data collection / replay
+# （在 lerobot_code 根目录执行；可去掉 isaacsim_arena_data_collector/ 前缀或改路径）
 # =============================================================================
+
+# --- office_204 + custom_box ---
 CUDA_VISIBLE_DEVICES=0 ISAACSIM_ARENA_COMMON_ROOT=/home/weipeng/lerobot_code \
   python isaacsim_arena_data_collector/collect_lerobot_data_autoplan.py \
   --output_dir ./lerobot_data \
@@ -113,6 +120,7 @@ CUDA_VISIBLE_DEVICES=0 ISAACSIM_ARENA_COMMON_ROOT=/home/weipeng/lerobot_code \
   --destination_prim office_204/blue_sorting_bin \
   --embodiment custom
 
+# --- office_204 + custom_package ---
 CUDA_VISIBLE_DEVICES=0 ISAACSIM_ARENA_COMMON_ROOT=/home/weipeng/lerobot_code \
   python isaacsim_arena_data_collector/collect_lerobot_data_autoplan.py \
   --output_dir ./lerobot_data \
@@ -139,7 +147,7 @@ CUDA_VISIBLE_DEVICES=0 ISAACSIM_ARENA_COMMON_ROOT=/home/weipeng/lerobot_code \
   --destination_prim office_204/blue_sorting_bin \
   --embodiment custom
 
-
+# --- packing_table + cracker_box_small + big_custom（原顺序：先 replay 后 collect）---
 CUDA_VISIBLE_DEVICES=0 ISAACSIM_ARENA_COMMON_ROOT=/home/weipeng/lerobot_code \
   python isaacsim_arena_data_collector/replay_lerobot_data_autoplan.py \
   --output_dir ./lerobot_data \
@@ -165,4 +173,3 @@ CUDA_VISIBLE_DEVICES=0 ISAACSIM_ARENA_COMMON_ROOT=/home/weipeng/lerobot_code \
   --background packing_table \
   --destination_prim container_h20 \
   --embodiment big_custom
-
